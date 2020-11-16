@@ -21,8 +21,8 @@ options = [
     "|",  # a pipe segment
     "T",  # a pipe top
     "E",  # an enemy
-    #"f",  # a flag, do not generate
-    #"v",  # a flagpole, do not generate
+    "f",  # a flag, do not generate
+    "v",  # a flagpole, do not generate
     #"m"  # mario's start position, do not generate
 ]
 
@@ -79,6 +79,7 @@ class Individual_Grid(object):
     def generate_children(self, other):
         new_genome = copy.deepcopy(self.genome)
         # Leaving first and last columns alone...
+
         # do crossover with other
         left = 1
         right = width - 1
@@ -87,7 +88,9 @@ class Individual_Grid(object):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
                 pass
+
         # do mutation; note we're returning a one-element tuple here
+        # self.mutate(new_genome)
         return (Individual_Grid(new_genome),)
 
     # Turn the genome into a level string (easy for this genome)
@@ -167,8 +170,21 @@ class Individual_DE(object):
         )
         penalties = 0
         # STUDENT For example, too many stairs are unaesthetic.  Let's penalize that
-        if len(list(filter(lambda de: de[1] == "6_stairs", self.genome))) > 5:
+        if len(list(filter(lambda de: de[1] == "6_stairs", self.genome))) > 7:
+            penalties -= 8
+        if len(list(filter(lambda de: de[1] == "0_hole", self.genome))) > 8:
+            penalties -= 10
+        if len(list(filter(lambda de: de[1] == "4_block", self.genome))) > 5:
+            penalties -= 0
+        if len(list(filter(lambda de: de[1] == "5_qblock", self.genome))) > 5:
+            penalties -= 0
+        if len(list(filter(lambda de: de[1] == "3_coin", self.genome))) > 5:
             penalties -= 2
+        if len(list(filter(lambda de: de[1] == "7_pipe", self.genome))) > 7:
+            penalties -= 10
+        if len(list(filter(lambda de: de[1] == "1_platform", self.genome))) > 7:
+            penalties -= 2
+
         # STUDENT If you go for the FI-2POP extra credit, you can put constraint calculation in here too and cache it in a new entry in __slots__.
         self._fitness = sum(map(lambda m: coefficients[m] * measurements[m],
                                 coefficients)) + penalties
@@ -261,8 +277,15 @@ class Individual_DE(object):
 
     def generate_children(self, other):
         # STUDENT How does this work?  Explain it in your writeup.
-        pa = random.randint(0, len(self.genome) - 1)
-        pb = random.randint(0, len(other.genome) - 1)
+        pa = 0
+        pb = 0
+
+        # Made this check for when the genomes are sometimes 0 and messes with the range
+        if len(self.genome) != 0:
+            pa = random.randint(0, len(self.genome) - 1)
+        if len(other.genome) != 0:
+            pb = random.randint(0, len(other.genome) - 1)
+
         a_part = self.genome[:pa] if len(self.genome) > 0 else []
         b_part = other.genome[pb:] if len(other.genome) > 0 else []
         ga = a_part + b_part
@@ -340,13 +363,36 @@ class Individual_DE(object):
         return Individual_DE(g)
 
 
-Individual = Individual_Grid
+Individual = Individual_DE
 
 
 def generate_successors(population):
     results = []
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
+    #print(len(population))
+
+    # Tournament Selection
+    pop_size = len(population)
+    for i in range(pop_size):
+        randomly_chosen = []
+
+        # Randomly choosing 24 contestants
+        for j in range(23):
+            randomly_chosen.append(random.choice(population))
+
+        # Sort the list and choose the 2 best parents with the best fitness
+        randomly_chosen = sorted(randomly_chosen, key=Individual.fitness, reverse=True)
+        winner1 = randomly_chosen[0]
+        winner2 = randomly_chosen[1]
+
+        # print(winner1, winner2)
+
+        # Use these two winners to generate children
+        results.append(Individual.generate_children(winner1, winner2)[0])
+
+    # Roulette Wheel Selection
+
     return results
 
 

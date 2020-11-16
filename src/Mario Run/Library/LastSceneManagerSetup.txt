@@ -1,0 +1,4 @@
+sceneSetups:
+- path: C:/Users/Josue Uriarte/Documents/GitHub/GameAI_Project6/src/Player/Assets/Scenes/GameWorldScene.unity
+  isLoaded: 1
+  isActive: 1
