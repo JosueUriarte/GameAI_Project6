@@ -7,6 +7,7 @@ import random
 import shutil
 import time
 import math
+from collections import OrderedDict
 
 width = 200
 height = 16
@@ -111,21 +112,33 @@ class Individual_Grid(object):
 
     # Create zero or more children from self and other
     def generate_children(self, other):
-        new_genome = copy.deepcopy(self.genome)
+        new_genome0 = copy.deepcopy(self.genome)
+        new_genome1 = copy.deepcopy(self.genome)
         # Leaving first and last columns alone...
 
         # do crossover with other
         left = 1
         right = width - 1
-        for y in range(height):
-            for x in range(left, right):
+        parent0 = self
+        parent1 = other
+        for x in range(left, right):
+            if random.random() < 0.01:
+                if parent0 == self:
+                    parent0 = other
+                    parent1 = self
+                else:
+                    parent0 = self
+                    parent1 = other
+            for y in range(height):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
+                new_genome0[y][x] = parent0[y][x]
+                new_genome1[y][x] = parent1[y][x]
                 pass
 
         # do mutation; note we're returning a one-element tuple here
         # self.mutate(new_genome)
-        return (Individual_Grid(new_genome),)
+        return (Individual_Grid(self.mutate(new_genome0)), Individual_Grid(self.mutate(new_genome1)))
 
     # Turn the genome into a level string (easy for this genome)
     def to_level(self):
@@ -404,28 +417,73 @@ def generate_successors(population):
     results = []
     # STUDENT Design and implement this
     # Hint: Call generate_children() on some individuals and fill up results.
-    #print(len(population))
+    # print(len(population))
 
-    # Tournament Selection
-    pop_size = len(population)
-    for i in range(pop_size):
-        randomly_chosen = []
+    # Tournament selection == 0 and Roulette Selection == 1
+    selection_method = 1
 
-        # Randomly choosing 24 contestants
-        for j in range(23):
-            randomly_chosen.append(random.choice(population))
+    if selection_method == 0:
+        # Tournament Selection
+        pop_size = len(population)
+        for i in range(pop_size):
+            randomly_chosen = []
 
-        # Sort the list and choose the 2 best parents with the best fitness
-        randomly_chosen = sorted(randomly_chosen, key=Individual.fitness, reverse=True)
-        winner1 = randomly_chosen[0]
-        winner2 = randomly_chosen[1]
+            # Randomly choosing 24 contestants
+            for j in range(23):
+                randomly_chosen.append(random.choice(population))
 
-        # print(winner1, winner2)
+            # Sort the list and choose the 2 best parents with the best fitness
+            randomly_chosen = sorted(randomly_chosen, key=Individual.fitness, reverse=True)
+            winner1 = randomly_chosen[0]
+            winner2 = randomly_chosen[1]
 
-        # Use these two winners to generate children
-        results.append(Individual.generate_children(winner1, winner2)[0])
+            # print(winner1, winner2)
+
+            # Use these two winners to generate children
+            results.append(Individual.generate_children(winner1, winner2)[0])
 
     # Roulette Wheel Selection
+    elif selection_method == 1:
+
+        normalize_pop = {}
+        probability = {}
+        fitness_sum = 0
+        min_fitness = abs(min([key.fitness() for key in population]))
+
+        for node in population:
+            normalize_pop[node] = node.fitness() + min_fitness + 0.20
+            fitness_sum += normalize_pop[node]
+
+        normalize_sorted_list = sorted(normalize_pop.items(), key=lambda item: item[1])
+        normalize_sorted = {}
+
+        for node in normalize_sorted_list:
+            normalize_sorted[node[0]] = node[1]
+
+        last_probability = 0
+        for node in population:
+            prob = last_probability + (normalize_sorted[node] / fitness_sum)
+            probability[node] = prob
+            last_probability = prob
+
+        pop_size = len(population)
+        for i in range(pop_size):
+
+            random_num = random.uniform(0, 1)
+            selected_parent1 = population[0]
+            for key in probability:
+                if probability[key] > random_num:
+                    selected_parent1 = key
+                    break
+
+            random_num = random.uniform(0, 1)
+            selected_parent2 = population[0]
+            for key in probability:
+                if probability[key] > random_num:
+                    selected_parent2 = key
+                    break
+
+            results.append(Individual.generate_children(selected_parent1, selected_parent2)[0])
 
     return results
 
