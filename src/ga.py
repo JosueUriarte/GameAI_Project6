@@ -22,9 +22,9 @@ options = [
     "|",  # a pipe segment
     "T",  # a pipe top
     "E",  # an enemy
-    "f",  # a flag, do not generate
-    "v",  # a flagpole, do not generate
-    #"m"  # mario's start position, do not generate
+    # "f",  # a flag, do not generate
+    # "v",  # a flagpole, do not generate
+    # "m"  # mario's start position, do not generate
 ]
 
 # The level as a grid of tiles
