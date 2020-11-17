@@ -77,21 +77,33 @@ class Individual_Grid(object):
 
     # Create zero or more children from self and other
     def generate_children(self, other):
-        new_genome = copy.deepcopy(self.genome)
+        new_genome0 = copy.deepcopy(self.genome)
+        new_genome1 = copy.deepcopy(self.genome)
         # Leaving first and last columns alone...
 
         # do crossover with other
         left = 1
         right = width - 1
-        for y in range(height):
-            for x in range(left, right):
+        parent0 = self
+        parent1 = other
+        for x in range(left, right):
+            if random.random() < 0.01:
+                if parent0 == self:
+                    parent0 = other
+                    parent1 = self
+                else:
+                    parent0 = self
+                    parent1 = other
+            for y in range(height):
                 # STUDENT Which one should you take?  Self, or other?  Why?
                 # STUDENT consider putting more constraints on this to prevent pipes in the air, etc
+                new_genome0[y][x] = parent0[y][x]
+                new_genome1[y][x] = parent1[y][x]
                 pass
 
         # do mutation; note we're returning a one-element tuple here
         # self.mutate(new_genome)
-        return (Individual_Grid(new_genome),)
+        return (Individual_Grid(self.mutate(new_genome0)), Individual_Grid(self.mutate(new_genome1)))
 
     # Turn the genome into a level string (easy for this genome)
     def to_level(self):
