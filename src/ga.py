@@ -77,29 +77,29 @@ class Individual_Grid(object):
                 if random.uniform(0, 1) < 0.4:
                     ran = random.uniform(0, 1)
                     # This is ground level
-                    if y == height -1
+                    if y == height -1:
                         # 70% to be a solid wall
                         if 0.3 <= ran:
                             genome[x][y] = options[1]
                         # 20% to be a pipe segment
-                        else if 0.1 < ran and ran < 0.3:
+                        elif 0.1 < ran and ran < 0.3:
                             genome[x][y] = options[6]
                         # 10% to be empty space
                         else:
                             genome[x][y] = options[0]
                     # This is from above solid ground to about a jump away
-                    else if y in range(height -6, height -2) and x > 10
+                    elif y in range(height -6, height -2) and x > 10:
                         # If the previous row was a pipe segment, finish the pipe
                         if genome[x][y+1] == options[6]:
                             genome[x][y] = options[7]
                         # 35% to be empty space
-                        else if 0.65 <= ran:
+                        elif 0.65 <= ran:
                             genome[x][y] = options[0]
                         # 20% to be a breakable block
-                        else if 0.45 <= ran and ran < 0.65:
+                        elif 0.45 <= ran and ran < 0.65:
                             genome[x][y] = options[5]
                         # 5% to be an enemy
-                        else if 0.4 <= ran and ran < 0.45:
+                        elif 0.4 <= ran and ran < 0.45:
                             genome[x][y] = options[8]
                         # 40% to be any other block
                         else:
